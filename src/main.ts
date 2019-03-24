@@ -11,6 +11,7 @@ import http = require('http');
 import HttpProxyAgent = require('http-proxy-agent');
 import HttpsProxyAgent = require('https-proxy-agent');
 import zlib = require('zlib');
+const fs = require('fs');
 
 import * as nls from 'vscode-nls';
 nls.config(process.env['VSCODE_NLS_CONFIG']);
@@ -247,6 +248,9 @@ function getProxyAgent(rawRequestURL: string, options: ProxyOptions = {}): any {
 		auth: proxyEndpoint.auth,
 		rejectUnauthorized: (typeof options.strictSSL === 'boolean') ? options.strictSSL : true
 	};
+	if(requestURL.protocol !== 'http:' && opts.rejectUnauthorized && process.env['NODE_EXTRA_CA_CERTS']){
+		opts.ca = fs.readFileSync(process.env['NODE_EXTRA_CA_CERTS'])
+	}
 
 	return requestURL.protocol === 'http:' ? new HttpProxyAgent(opts) : new HttpsProxyAgent(opts);
 }
